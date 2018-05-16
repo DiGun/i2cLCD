@@ -36,10 +36,10 @@ void write4bits(uint8_t value)
 void pulseEnable(uint8_t _data)
 {
 	expanderWrite(_data | En);	// En high
-	_delay_ms(1);		// enable pulse must be >450ns
+	_delay_us(450);		// enable pulse must be >450ns
 	
 	expanderWrite(_data & ~En);	// En low
-	_delay_ms(50);		// commands need > 37us to settle
+	_delay_us(40);		// commands need > 37us to settle
 }
 
 
@@ -77,14 +77,14 @@ void noDisplay()
 void home()
 {
 	command(LCD_RETURNHOME);  // set cursor position to zero
-	_delay_ms(1000);  // this command takes a long time!
+	_delay_ms(500);  // this command takes a long time!
 }
 
 /********** high level commands, for the user! */
 void clear()
 {
 	command(LCD_CLEARDISPLAY);// clear display, set cursor position to zero
-	_delay_ms(1000);  // this command takes a long time!
+	_delay_ms(500);  // this command takes a long time!
 }
 
 
@@ -110,21 +110,57 @@ void setBacklight(uint8_t new_val)
 	}
 }
 
-void setCursor(uint8_t col, uint8_t row)
-{
-int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-if ( row > _numlines ) {
-	row = _numlines-1;    // we count rows starting w/0
-}
-command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
-}
-
 void send_char(char c)
 {
 	send((uint8_t)c, Rs);	
 }
 
 
+// Turns the underline cursor on/off
+void noCursor() 
+{
+	_displaycontrol &= ~LCD_CURSORON;
+	command(LCD_DISPLAYCONTROL | _displaycontrol);
+}
+void cursor()
+{
+	_displaycontrol |= LCD_CURSORON;
+	command(LCD_DISPLAYCONTROL | _displaycontrol);
+}
+
+void setCursor(uint8_t col, uint8_t row)
+{
+	int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+	if ( row > _numlines )
+	{
+		row = _numlines-1;    // we count rows starting w/0
+	}
+	command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
+}
+
+// Allows us to fill the first 8 CGRAM locations
+// with custom characters
+void createChar(uint8_t location, uint8_t charmap[])
+{
+	location &= 0x7; // we only have 8 locations 0-7
+	command(LCD_SETCGRAMADDR | (location << 3));
+	for (int i=0; i<8; i++) 
+	{
+		I2C_SendByteByADDR((charmap[i]),_Addr);
+	}
+}
+
+// Turn on and off the blinking cursor
+void noBlink()
+{
+	_displaycontrol &= ~LCD_BLINKON;
+	command(LCD_DISPLAYCONTROL | _displaycontrol);
+}
+void blink()
+{
+	_displaycontrol |= LCD_BLINKON;
+	command(LCD_DISPLAYCONTROL | _displaycontrol);
+}
 
 void LCD_init()
 {

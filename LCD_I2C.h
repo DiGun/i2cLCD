@@ -66,15 +66,23 @@ void send(uint8_t value, uint8_t mode);
 
 void home();
 void clear();
-void setCursor(uint8_t col, uint8_t row);
+void createChar(uint8_t, uint8_t[]);
 
 void display();
 void noDisplay();
 
+void noCursor();
+void cursor();
+void setCursor(uint8_t col, uint8_t row);
+
+void noBlink();
+void blink();
+  
 void backlight(void);
 void noBacklight(void);
 void setBacklight(uint8_t new_val);
 
+void createChar(uint8_t location, uint8_t charmap[]);
 void send_char(char c);
 
 static int fputchar(char c, FILE *stream)

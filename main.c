@@ -23,13 +23,19 @@ int main(void)
 	printf("chuguev.net");
 	setCursor(8,1);
 	printf("LCD 1602");
-
+	_delay_ms(2000);
 	uint8_t n=0;
 	while(1)
 	{
 //		PORTD^=1<<PORTD4;
-		setCursor(0,1);
-		printf("%3d",n++);
-		_delay_ms(1000);
+		for(uint8_t r=0; r<2;r++)
+		{
+			setCursor(0,r);
+			for (uint8_t c=0;c<16;c++)
+			{
+				printf("%c",n++);				
+			}
+		}
+		_delay_ms(5000);
 	}
 }
